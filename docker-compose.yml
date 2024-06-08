@@ -7,22 +7,28 @@ services:
     container_name: nginx
     ports:
       - "8080:80"
+    networks:
+      - nginx_net
+    depends_on:
+      - jenkins
 
   jenkins:
-    build:
-      context: ./jenkins
-      dockerfile: Dockerfile
+    image: jenkins/jenkins:lts
     container_name: jenkins
     ports:
-      - "8081:81"
+      - "8081:8080"
       - "50000:50000"
+    networks:
+      - nginx_net
     volumes:
       - jenkins_home:/var/jenkins_home
-    networks:
-      - jenkins_network
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JENKINS_OPTS=--prefix=/jenkins
 
 volumes:
   jenkins_home:
 
 networks:
-  jenkins_network:
+  nginx_net:
+    driver: bridge
